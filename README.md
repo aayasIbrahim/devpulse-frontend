@@ -4,6 +4,25 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
+src/
+├── app/
+│   ├── (auth)/                # Group for auth pages (shares layout, hides from URL)
+│   │   ├── login/page.tsx     # POST /api/auth/login
+│   │   └── signup/page.tsx    # POST /api/auth/signup
+│   ├── issues/
+│   │   ├── page.tsx           # GET /api/issues (Public feed with filters)
+│   │   ├── new/page.tsx       # POST /api/issues (Authenticated)
+│   │   └── [id]/
+│   │       ├── page.tsx       # GET /api/issues/:id (Public detail)
+│   │       └── edit/page.tsx  # PATCH /api/issues/:id (Owner/Maintainer)
+│   ├── layout.tsx             # Global layout & Providers (Auth, Theme)
+│   └── page.tsx               # Landing page / Root redirect
+├── components/                # Reusable UI (Table, IssueCard, FilterSidebar)
+├── hooks/                     # Custom hooks (useAuth, useIssues)
+├── lib/                       # API clients, tokens, and utility functions
+└── middleware.tsx             # Route Guarding & JWT validation
+
+
 ```bash
 npm run dev
 # or
