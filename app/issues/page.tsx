@@ -61,7 +61,22 @@ export default function IssuesPage() {
   const handleIssueCreated = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
+  const handleDeleteIssue = async (e: React.MouseEvent, issueId: number) => {
+    e.stopPropagation(); // 💡 যেন লাইনে ক্লিক হয়ে Details Modal ওপেন না হয়ে যায়
 
+    if (!window.confirm("Are you sure you want to delete this issue?")) return;
+
+    try {
+      // আপনার ব্যাকএন্ডের DELETE /issues/:id এপিআই কল
+      await api.delete<{ message: string }>(`/issues/${issueId}`);
+
+      // টেবিল রিফ্রেশ করা
+      setRefreshTrigger((prev) => prev + 1);
+    } catch (error) {
+      console.error("Failed to delete issue:", error);
+      alert("You are not authorized to delete this issue.");
+    }
+  };
   return (
     <ProtectedRoute>
       <div className="flex h-screen bg-gray-100 font-sans antialiased overflow-hidden">
@@ -256,13 +271,15 @@ export default function IssuesPage() {
                         <th className="px-6 py-4 hidden md:table-cell">
                           Reported By
                         </th>
+                        {user?.role === "maintainer" && (
+                          <th className="px-6 py-4 text-right">Actions</th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 text-sm text-gray-700">
                       {issues.map((issue) => (
                         <tr
                           key={issue.id}
-                          
                           onClick={() => openIssueDetails(issue.id)}
                           className=" cursor-pointer hover:bg-gray-50 transition-colors"
                         >
@@ -307,6 +324,7 @@ export default function IssuesPage() {
                               {issue.status.replace("_", " ")}
                             </span>
                           </td>
+
                           {/* 💡 রিপোর্টার কলাম: আপনার ব্যাকএন্ডের ব্যাচ ডাটা থেকে সরাসরি নাম ও রোল রেন্ডার হচ্ছে */}
                           <td className="px-6 py-4 hidden md:table-cell whitespace-nowrap">
                             <div className="font-medium text-gray-900">
@@ -316,6 +334,30 @@ export default function IssuesPage() {
                               {issue.reporter?.role || "N/A"}
                             </div>
                           </td>
+                          {user?.role === "maintainer" && (
+                            <td className="px-6 py-4 text-right whitespace-nowrap">
+                              <button
+                                onClick={(e) => handleDeleteIssue(e, issue.id)}
+                                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete Issue"
+                              >
+                                {/* ট্র্যাশ/ডিলিট SVG আইকন */}
+                                <svg
+                                  className="w-5 h-5 inline"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
+                              </button>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
