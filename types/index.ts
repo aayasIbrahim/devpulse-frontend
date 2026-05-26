@@ -11,9 +11,18 @@ export interface SignupInput {
   password:string;
   role: "contributor" | "maintainer";
 }
+// ব্যাকএন্ড কনসোল রেসপন্সের সাথে মিল রেখে ১০০% নিখুঁত ইন্টারফেস
 export interface SignupResponse {
-  token: string;
-  message?: string;
+  success: boolean;
+  message: string;
+  data: {
+    id: number;
+    name: string;
+    email: string;
+    role: "contributor" | "maintainer";
+    created_at: string;
+    [key: string]: unknown; 
+  };
 }
 export interface ApiClient {
   // R = unknown দেওয়া হয়েছে যাতে রেসপন্স ডাটা ডিফল্টভাবে টাইপ-সেফ থাকে
@@ -39,8 +48,16 @@ export interface LoginInput {
   password: string;
 }
 export interface LoginResponse {
-  token: string;
-  message?: string;
+  message: string;
+  data: {
+    token: string;
+    user: {
+      id: number;
+      name: string;
+      email: string;
+      role: "contributor" | "maintainer";
+    };
+  };
 }
 export interface AuthContextType {
   user: User | null;
@@ -48,4 +65,27 @@ export interface AuthContextType {
   login: (token: string) => void;
   logout: () => void;
   loading: boolean;
+}
+// ব্যাকএন্ডের কম্বাইন্ড রেসপন্স স্ট্রাকচার
+export interface Reporter {
+  id: number;
+  name: string;
+  role: 'contributor' | 'maintainer';
+}
+
+export interface Issue {
+  id: number;
+  title: string;
+  description: string;
+  type: 'bug' | 'feature_request';
+  status: 'open' | 'in_progress' | 'resolved';
+  created_at: string;
+  updated_at: string;
+  reporter: Reporter | null; // ব্যাকএন্ড থেকে আসা রিপোর্টার অবজেক্ট
+}
+
+// এপিআই রেসপন্সের স্ট্যান্ডার্ড ফরম্যাট
+export interface GetIssuesResponse {
+  message: string;
+  data: Issue[];
 }

@@ -26,39 +26,34 @@ export default function LoginPage() {
   });
 
   // ফর্ম সাবমিট হ্যান্ডলার (API Call)
-  const onSubmit = async (data: LoginInput) => {
-    setError(null);
-    setLoading(true);
+const onSubmit = async (data: LoginInput) => {
+  setError(null);
+  setLoading(true);
 
-    try {
-      // 💡 সিনট্যাক্স ফিক্স: প্রোপার জেনেরিক টাইপ সহ api.post কল করা হয়েছে
-      const response = await api.post<LoginInput, LoginResponse>(
-        "/auth/login",
-        {
-          email: data.email,
-          password: data.password || "",
-        },
-      );
+  try {
+    // এপিআই-তে রিকোয়েস্ট পাঠানো হচ্ছে
+    const response = await api.post<LoginInput, LoginResponse>("/auth/login", {
+      email: data.email,
+      password: data.password || "",
+    });
 
-      // 💡 ডাটা স্ট্রাকচার ফিক্স: কাস্টম fetch সরাসরি রেসপন্স দেয়, response.data লাগবে না
-      if (response && response.token) {
-        login(response.token);
-      } else {
-        setError("Server did not return an authentication token.");
-      }
-    } catch (err) {
-      console.error("Login component error:", err);
-
-      // 💡 any রিমুভড: টাইপ-সেফ উপায়ে এরর মেসেজ হ্যান্ডেল করা হয়েছে
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Invalid email or password. Please try again.");
-      }
-    } finally {
-      setLoading(false);
+    // 💡 ব্যাকএন্ড রেসপন্স স্ট্রাকচার (response.data.token) অনুযায়ী টোকেন রিড করা হচ্ছে
+    if (response && response.data && response.data.token) {
+      login(response.data.token); 
+    } else {
+      setError("Server did not return an authentication token.");
     }
-  };
+  } catch (err) {
+    console.error("Login component error:", err);
+    if (err instanceof Error) {
+      setError(err.message);
+    } else {
+      setError("Invalid email or password. Please try again.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 text-slate-100">
       <div className="w-full max-w-md space-y-6 rounded-xl border border-slate-800 bg-slate-900/50 p-8 backdrop-blur-sm">
@@ -67,7 +62,7 @@ export default function LoginPage() {
           <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 mb-3">
             <Shield size={24} />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">
+          <h1 className="text-2xl font-bold tracking-tigh_t">
             Welcome to DevPulse
           </h1>
           <p className="text-sm text-slate-400 mt-1">

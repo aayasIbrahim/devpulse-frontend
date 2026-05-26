@@ -5,13 +5,13 @@ import { useForm } from "react-hook-form";
 import Link from "next/link";
 import { Shield, User, Mail, Lock } from "lucide-react";
 import { api } from "@/lib/api";
-import { useAuth } from "@/context/AuthContext";
+
 import { SignupInput, SignupResponse } from "@/types";
-
-
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
-  const { login } = useAuth();
+  const router = useRouter();
+
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,24 +31,26 @@ export default function SignupPage() {
   const onSubmit = async (data: SignupInput) => {
     setError(null);
     setLoading(true);
+
     try {
-      // 1. Send data matching your user table schema
-      // 💡 জেনেরিক টাইপ হিসেবে SignupInput এবং SignupResponse পাস করা হয়েছে
+      // ব্যাকএন্ড রেসপন্সের সাথে ম্যাচ করিয়ে generic টাইপ দেয়া হয়েছে
       const response = await api.post<SignupInput, SignupResponse>(
         "/auth/signup",
         data,
       );
 
-      // 💡 ফিক্স: response.data?.token এর বদলে সরাসরি response.token চেক করতে হবে
-      if (response && response.token) {
-        login(response.token);
+      // 💡 ব্যাকএন্ড রেসপন্স চেক: যদি রেজিস্ট্রেশন সফল হয়
+      if (response && response.success) {
+        // ইউজারকে জানান যে অ্যাকাউন্ট তৈরি হয়েছে
+        alert("Registration successful! Please login with your credentials.");
+
+        // সরাসরি লগইন পেজে পাঠিয়ে দেওয়া হচ্ছে
+        router.push("/login");
       } else {
-        setError("Server did not return an authentication token.");
+        setError("Something went wrong. Please try again.");
       }
     } catch (err) {
       console.error("Registration error:", err);
-
-      // err যদি এপিআই থেকে আসা এরর অবজেক্ট হয়
       if (err instanceof Error) {
         setError(err.message);
       } else {
