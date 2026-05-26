@@ -89,3 +89,24 @@ export interface GetIssuesResponse {
   message: string;
   data: Issue[];
 }
+export interface IssueDetailsModalProps {
+  issueId: number | null; 
+  isOpen: boolean;
+  onClose: () => void;
+}
+export interface SingleIssueResponse {
+  data: {
+    id: number;
+    title: string;
+    description: string;
+    type: 'bug' | 'feature_request';
+    status: 'open' | 'in_progress' | 'resolved';
+    created_at: string;
+    updated_at: string;
+    reporter: {
+      id: number;
+      name: string;
+      role: string;
+    } | null;
+  };
+}
