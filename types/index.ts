@@ -11,7 +11,7 @@ export interface SignupInput {
   password:string;
   role: "contributor" | "maintainer";
 }
-// ব্যাকএন্ড কনসোল রেসপন্সের সাথে মিল রেখে ১০০% নিখুঁত ইন্টারফেস
+
 export interface SignupResponse {
   success: boolean;
   message: string;
@@ -51,12 +51,7 @@ export interface LoginResponse {
   message: string;
   data: {
     token: string;
-    user: {
-      id: number;
-      name: string;
-      email: string;
-      role: "contributor" | "maintainer";
-    };
+    user: User
   };
 }
 export interface AuthContextType {
@@ -66,7 +61,7 @@ export interface AuthContextType {
   logout: () => void;
   loading: boolean;
 }
-// ব্যাকএন্ডের কম্বাইন্ড রেসপন্স স্ট্রাকচার
+
 export interface Reporter {
   id: number;
   name: string;
@@ -81,10 +76,9 @@ export interface Issue {
   status: 'open' | 'in_progress' | 'resolved';
   created_at: string;
   updated_at: string;
-  reporter: Reporter | null; // ব্যাকএন্ড থেকে আসা রিপোর্টার অবজেক্ট
+  reporter: Reporter | null;
 }
 
-// এপিআই রেসপন্সের স্ট্যান্ডার্ড ফরম্যাট
 export interface GetIssuesResponse {
   message: string;
   data: Issue[];
@@ -95,18 +89,5 @@ export interface IssueDetailsModalProps {
   onClose: () => void;
 }
 export interface SingleIssueResponse {
-  data: {
-    id: number;
-    title: string;
-    description: string;
-    type: 'bug' | 'feature_request';
-    status: 'open' | 'in_progress' | 'resolved';
-    created_at: string;
-    updated_at: string;
-    reporter: {
-      id: number;
-      name: string;
-      role: string;
-    } | null;
-  };
+  data: Issue
 }
