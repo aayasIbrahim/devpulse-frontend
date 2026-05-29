@@ -8,6 +8,8 @@ import CreateIssueModal from "@/components/CreateIssueModal";
 import { GetIssuesResponse, Issue } from "@/types";
 import IssueDetailsModal from "@/components/IssueDetailsModal";
 
+
+
 export default function IssuesPage() {
   const { user, logout } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -18,65 +20,103 @@ export default function IssuesPage() {
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-  // মোডাল ওপেন করার হ্যান্ডলার
-  const openIssueDetails = (id: number) => {
-    setSelectedIssueId(id);
-    setIsDetailsOpen(true);
-  };
   // 💡 ব্যাকএন্ড queryParams এর সাথে মিল রেখে স্টেট
   const [statusFilter, setStatusFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
 
-  // ব্যাকএন্ড থেকে ডাইনামিক কুয়েরি প্যারামিটারসহ ডাটা ফেচ
-  useEffect(() => {
-    const fetchIssues = async () => {
-      try {
-        setLoadingIssues(true);
+  // মোডাল ওপেন করার হ্যান্ডলার
+  const openIssueDetails = (id: number) => {
+    setSelectedIssueId(id);
+    setIsDetailsOpen(true);
+  };
 
-        // ১. ডাইনামিক কোয়েরি স্ট্রিং বিল্ড করা
-        const params = new URLSearchParams();
-        if (statusFilter) params.append("status", statusFilter);
-        if (typeFilter) params.append("type", typeFilter);
-        if (sortOrder) params.append("sort", sortOrder);
+  // ==========================================================
+  // 💡 ১. সেন্ট্রালাইজড এবং ক্লিন ডাটা ফেচিং ফাংশন (No Duplicate Code)
+  // ==========================================================
+ const fetchIssues = async (isMounted = true) => {
+    try {
+      if (isMounted) setLoadingIssues(true);
 
-        const url = `/issues?${params.toString()}`;
+      const params = new URLSearchParams();
+      if (statusFilter) params.append("status", statusFilter);
+      if (typeFilter) params.append("type", typeFilter);
+      if (sortOrder) params.append("sort", sortOrder);
 
-        // ২. এপিআই কল
-        const response = await api.get<GetIssuesResponse>(url);
+      const url = `/issues?${params.toString()}`;
+      
+      // 💡 'as any' রিমুভ করে সরাসরি GetIssuesResponse টাইপ ডিফাইন করা হয়েছে
+      const response = await api.get<GetIssuesResponse>(url);
 
-        if (response && response.data) {
-          setIssues(response.data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch issues:", error);
-      } finally {
-        setLoadingIssues(false);
+      if (isMounted && response && response.data) {
+        // আপনার `GetIssuesResponse` যদি সরাসরি Issue[] (অ্যারে) হয়:
+        const rawIssues = response.data;
+
+        // রানটাইম ক্র্যাশ এড়াতে ব্যাকএন্ডের রেসপন্স নেস্টেড অবজেক্ট নাকি সরাসরি অ্যারে তা চেক করা হচ্ছে
+        const extractedIssues = Array.isArray(rawIssues)
+          ? rawIssues
+          : (typeof rawIssues === "object" && "data" in rawIssues && Array.isArray((rawIssues as { data: Issue[] }).data)
+              ? (rawIssues as unknown as { data: Issue[] }).data
+              : []);
+          
+        setIssues(extractedIssues);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch issues:", error);
+    } finally {
+      if (isMounted) setLoadingIssues(false);
+    }
+  };
 
-    fetchIssues();
+  // ==========================================================
+  // 💡 ২. রিয়্যাক্ট ফ্রেন্ডলি ডাটা ফেচিং useEffect
+  // ==========================================================
+  useEffect(() => {
+    let isMounted = true;
+
+    // লোডিং স্টেটটিকে প্রথম রেন্ডার সাইকেলের বাইরে পুশ করে ফেচ করা হচ্ছে
+    const _t = setTimeout(() => {
+      void fetchIssues(isMounted);
+    }, 0);
+
+    // ক্লিনআপ ফাংশন
+    return () => {
+      isMounted = false;
+      clearTimeout(_t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, typeFilter, sortOrder, refreshTrigger]);
 
+  // ==========================================================
+  // 💡 ৩. হ্যান্ডলার ফাংশনস (অটোমেটিক রিয়েল-টাইম আপডেট)
+  // ==========================================================
   const handleIssueCreated = () => {
+    // ডাবল এপিআই কল রোধ করতে শুধু ট্রিগার চেঞ্জ করলেই useEffect নতুন ডাটা নিয়ে আসবে
     setRefreshTrigger((prev) => prev + 1);
   };
+
+  const handleIssueUpdated = () => {
+    // মোডাল থেকে এডিট হওয়ার পর এই ফাংশনটি পেরেন্ট টেবিল আপডেট করবে
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
   const handleDeleteIssue = async (e: React.MouseEvent, issueId: number) => {
-    e.stopPropagation(); // 💡 যেন লাইনে ক্লিক হয়ে Details Modal ওপেন না হয়ে যায়
+    e.stopPropagation(); // 💡 যেন লাইনে ক্লিক হয়ে Details Modal ওপেন না হয়ে যায়
 
     if (!window.confirm("Are you sure you want to delete this issue?")) return;
 
     try {
-      // আপনার ব্যাকএন্ডের DELETE /issues/:id এপিআই কল
       await api.delete<{ message: string }>(`/issues/${issueId}`);
-
-      // টেবিল রিফ্রেশ করা
+      // ডিলিট সাকসেস হলে টেবিল রিফ্রেশ হবে
       setRefreshTrigger((prev) => prev + 1);
     } catch (error) {
       console.error("Failed to delete issue:", error);
       alert("You are not authorized to delete this issue.");
     }
   };
+
+  // return ( ... আপনার JSX এখানে আসবে এবং IssueDetailsModal এ `onIssueUpdated={handleIssueUpdated}` পাস করবেন ... )
+
   return (
     <ProtectedRoute>
       <div className="flex h-screen bg-gray-100 font-sans antialiased overflow-hidden">
@@ -374,14 +414,16 @@ export default function IssuesPage() {
         onClose={() => setIsModalOpen(false)}
         onIssueCreated={handleIssueCreated}
       />
-      <IssueDetailsModal
-        issueId={selectedIssueId}
-        isOpen={isDetailsOpen}
-        onClose={() => {
-          setIsDetailsOpen(false);
-          setSelectedIssueId(null);
-        }}
-      />
+     <IssueDetailsModal
+  issueId={selectedIssueId}
+  isOpen={isDetailsOpen}
+  onClose={() => {
+    setIsDetailsOpen(false);
+    setSelectedIssueId(null);
+  }}
+  // 💡 এই প্রপ্সটি যুক্ত করা হয়েছে যেন মোডাল থেকে পেরেন্ট টেবিল আপডেট হতে পারে
+  onIssueUpdated={handleIssueUpdated} 
+/>
     </ProtectedRoute>
   );
 }
