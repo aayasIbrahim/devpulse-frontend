@@ -3,21 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
-import { IssueDetailsModalProps, SingleIssueResponse } from "@/types";
-
-// Axios বা API Client Error এর জন্য সুনির্দিষ্ট ইন্টারফেস
-interface ApiErrorResponse {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-  message: string;
-}
-
-interface ExtendedModalProps extends IssueDetailsModalProps {
-  onIssueUpdated?: () => void;
-}
+import {
+  ApiErrorResponse,
+  ExtendedModalProps,
+  SingleIssueResponse,
+} from "@/types";
 
 export default function IssueDetailsModal({
   issueId,

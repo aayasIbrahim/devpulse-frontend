@@ -91,3 +91,21 @@ export interface IssueDetailsModalProps {
 export interface SingleIssueResponse {
   data: Issue
 }
+export interface ApiErrorResponse {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+  message: string;
+}
+
+export interface ExtendedModalProps extends IssueDetailsModalProps {
+  onIssueUpdated?: () => void;
+}
+export type UpdateIssuePayload = {
+  title: string;
+  description: string;
+  type: "bug" | "feature_request";
+  status: "open" | "in_progress" | "resolved";
+};
