@@ -26,19 +26,19 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-gray-100 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 font-sans">
+    <div className="min-h-screen   bg-slate-950 px-4 text-slate-100  flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8 font-sans">
       
       {/* মেইন কন্টেন্ট কার্ড */}
-      <div className="max-w-md w-full space-y-8 text-center bg-white p-8 rounded-2xl shadow-xl border border-gray-100/80 transition-all">
+      <div className="max-w-md w-full space-y-8 text-center bg-slate-950 p-8 rounded-xl border border-slate-800 bg-slate-900/50 p-8 backdrop-blur-sm">
         
         {/* লোগো / আইকন */}
-        <div className="mx-auto h-16 w-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-3xl shadow-inner">
+        <div className="mx-auto h-16 w-16 bg-indigo-600/20 text-indigo-400  rounded-2xl flex items-center justify-center text-3xl shadow-inner">
           🛡️
         </div>
 
         {/* হেডিং */}
         <div className="space-y-2">
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight sm:text-4xl">
+          <h1 className="text-3xl font-extrabold text-slate-400 tracking-tight sm:text-4xl">
             Issue Tracker
           </h1>
           <p className="text-sm text-gray-500 font-medium">
