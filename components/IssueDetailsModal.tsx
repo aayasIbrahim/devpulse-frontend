@@ -112,8 +112,8 @@ export default function IssueDetailsModal({
     setError(null);
     if (editTitle.length > 150)
       return setError("Title cannot exceed 150 characters");
-    if (editDescription.length < 20)
-      return setError("Description must be at least 20 characters");
+    if (editDescription.length > 450)
+      return setError("Description cannot exceed 450 characters");
 
     try {
       setUpdateLoading(true);
